@@ -1,178 +1,989 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulateur BTP Sénégal Pro</title>
-    <!-- Tailwind CSS pour un design propre et responsive -->
+    <title>BCTES SIDIBE BCTES / IMMO - Simulateur de Devis BTP Sénégal</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js pour les graphiques -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Configuration Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        btp: {
+                            blue: '#0B2545',
+                            lightblue: '#134074',
+                            cyan: '#00A8E8',
+                            orange: '#FF6B00',
+                            amber: '#F59E0B',
+                            slate: '#1E293B',
+                            light: '#F8FAFC'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f1f5f9;
+        }
 
-    <!-- En-tête -->
-    <header class="bg-emerald-700 text-white shadow-md py-4 px-6 flex justify-between items-center">
-        <h1 class="text-xl font-bold">Simulateur BTP Sénégal Pro</h1>
-        <!-- Bouton Éditeur / Crayon visible -->
-        <button id="editorToggleBtn" onclick="toggleEditor()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 shadow transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Éditeur / Barèmes
-        </button>
+        /* Personnalisation du slider */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #FF6B00;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+            transition: all 0.2s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        /* Animation Modal */
+        .modal-fade {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Support d'impression propre */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .shadow-lg, .shadow-md, .shadow-xl, .shadow-2xl {
+                box-shadow: none !important;
+            }
+            .border-print {
+                border: 1px solid #cbd5e1 !important;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- En-tête / Header -->
+    <header class="bg-btp-blue text-white shadow-xl no-print border-b-4 border-btp-orange sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            
+            <!-- Logo Vectoriel BCTES SIDIBE BCTES / IMMO -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+                <div class="w-12 h-12 bg-white rounded-xl p-1 shadow-md flex items-center justify-center">
+                    <svg viewBox="0 0 300 200" class="w-full h-full">
+                        <!-- Arche Extérieure Structurelle -->
+                        <path d="M 30,120 A 120,120 0 0,1 270,120" fill="none" stroke="#0B2545" stroke-width="14" stroke-linecap="round"/>
+                        <path d="M 45,120 A 105,105 0 0,1 255,120" fill="none" stroke="#00A8E8" stroke-width="4" stroke-dasharray="8,4"/>
+                        <!-- Piste & Route du Bas -->
+                        <path d="M 20,135 L 280,135" stroke="#0B2545" stroke-width="12" stroke-linecap="round"/>
+                        <path d="M 25,135 L 275,135" stroke="#ffffff" stroke-width="2" stroke-dasharray="10,6"/>
+                        <!-- Maison au centre -->
+                        <polygon points="150,40 70,105 230,105" fill="none" stroke="#0B2545" stroke-width="12" stroke-linejoin="round"/>
+                        <polygon points="150,55 88,105 212,105" fill="none" stroke="#00A8E8" stroke-width="6"/>
+                        <rect x="135" y="75" width="30" height="30" fill="none" stroke="#0B2545" stroke-width="5"/>
+                        <line x1="150" y1="75" x2="150" y2="105" stroke="#0B2545" stroke-width="3"/>
+                        <line x1="135" y1="90" x2="165" y2="90" stroke="#0B2545" stroke-width="3"/>
+                        <!-- Flèche de Croissance / Graphique -->
+                        <path d="M 80,120 L 130,85 L 160,100 L 225,45" fill="none" stroke="#0B2545" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polygon points="225,45 205,48 220,65" fill="#0B2545"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-extrabold tracking-tight leading-tight">
+                        BCTES / SIDIBE <span class="text-cyan-400">BCTES / IMMO</span>
+                    </h1>
+                    <p class="text-[10px] sm:text-xs text-amber-400 font-bold uppercase tracking-wider">
+                        Maçonnerie • Rénovation • Immobilier • TP
+                    </p>
+                </div>
+            </div>
+
+            <!-- Actions Header -->
+            <div class="flex items-center space-x-3">
+                <button onclick="openSettingsModal()" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-2 rounded-xl border border-amber-400/30 text-xs sm:text-sm font-bold transition shadow-sm">
+                    <i class="fa-solid fa-gear text-base"></i>
+                    <span class="hidden sm:inline">Réglages des Prix</span>
+                </button>
+                <div class="hidden lg:flex flex-col text-right text-xs">
+                    <span class="font-bold text-white"><i class="fa-solid fa-phone text-btp-orange mr-1"></i> +221 33 800 00 00</span>
+                    <span class="text-slate-300"><i class="fa-solid fa-location-dot text-btp-orange mr-1"></i> Dakar, Sénégal</span>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <main class="flex-grow container mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Section Paramètres / Barèmes (Visible par défaut, sans classe hidden) -->
-        <section id="parametersSection" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 lg:col-span-1">
-            <h2 class="text-lg font-semibold text-emerald-700 mb-4 border-b pb-2">Paramètres & Barèmes (FCFA / m²)</h2>
-            <div class="space-y-4 text-sm">
-                <div>
-                    <label class="block font-medium text-slate-700 mb-1">Coût Gros Œuvre (m²)</label>
-                    <input type="number" id="paramGrosOeuvre" value="75000" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none" oninput="calculateQuote()">
-                </div>
-                <div>
-                    <label class="block font-medium text-slate-700 mb-1">Coût Second Œuvre (m²)</label>
-                    <input type="number" id="paramSecondOeuvre" value="50000" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none" oninput="calculateQuote()">
-                </div>
-                <div>
-                    <label class="block font-medium text-slate-700 mb-1">Coût Finitions & Options (m²)</label>
-                    <input type="number" id="paramOptions" value="35000" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none" oninput="calculateQuote()">
-                </div>
-            </div>
-        </section>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
 
-        <!-- Section Saisie Projet -->
-        <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 lg:col-span-2 space-y-4">
-            <h2 class="text-lg font-semibold text-emerald-700 mb-2 border-b pb-2">Caractéristiques du Projet</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-medium text-slate-700 mb-1">Surface du bâtiment (m²)</label>
-                    <input type="number" id="surfaceInput" value="150" placeholder="Ex: 150" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none" oninput="calculateQuote()">
+        <!-- Banner Intro -->
+        <div class="mb-8 text-center max-w-3xl mx-auto no-print">
+            <h2 class="text-2xl sm:text-4xl font-extrabold text-btp-blue mb-2">Simulateur & Calculateur de Devis BTP</h2>
+            <p class="text-slate-600 text-sm sm:text-base">
+                Estimez le coût global de vos travaux de construction, de plans d'architecture et d'aménagements au Sénégal avec la possibilité de personnaliser tous les tarifs du barème.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <!-- Saisie du Projet (Col 7) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-slate-200 space-y-6 no-print">
+                
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="bg-amber-100 text-btp-orange p-2 rounded-lg font-bold text-lg"><i class="fa-solid fa-sliders"></i></span>
+                        <h3 class="text-xl font-bold text-btp-blue">1. Caractéristiques de l'Ouvrage</h3>
+                    </div>
+                    <button type="button" onclick="openSettingsModal()" class="text-xs text-btp-orange hover:underline font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-pen-to-square"></i> Modifier les barèmes
+                    </button>
                 </div>
+
+                <!-- Type de Projet -->
                 <div>
-                    <label class="block font-medium text-slate-700 mb-1">Type de Standing</label>
-                    <select id="standingSelect" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none" onchange="calculateQuote()">
-                        <option value="1">Économique (Standard)</option>
-                        <option value="1.25" selected>Standing Moyen</option>
-                        <option value="1.6">Haut Standing / Luxe</option>
-                    </select>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        Type de Projet BTP <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="relative flex items-center p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-btp-orange transition-all font-medium text-sm has-[:checked]:border-btp-orange has-[:checked]:bg-orange-50/50">
+                            <input type="radio" name="projectType" value="maison" class="sr-only" checked onchange="calculateQuote()">
+                            <i class="fa-solid fa-house text-btp-blue mr-3 text-lg"></i>
+                            <div>
+                                <div class="font-bold">Villa / Maison</div>
+                                <div class="text-[11px] text-slate-500" id="ratePreviewMaison">220 000 FCFA/m²</div>
+                            </div>
+                        </label>
+                        <label class="relative flex items-center p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-btp-orange transition-all font-medium text-sm has-[:checked]:border-btp-orange has-[:checked]:bg-orange-50/50">
+                            <input type="radio" name="projectType" value="immeuble" class="sr-only" onchange="calculateQuote()">
+                            <i class="fa-solid fa-building text-btp-blue mr-3 text-lg"></i>
+                            <div>
+                                <div class="font-bold">Immeuble / R+ / Com.</div>
+                                <div class="text-[11px] text-slate-500" id="ratePreviewImmeuble">260 000 FCFA/m²</div>
+                            </div>
+                        </label>
+                        <label class="relative flex items-center p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-btp-orange transition-all font-medium text-sm has-[:checked]:border-btp-orange has-[:checked]:bg-orange-50/50">
+                            <input type="radio" name="projectType" value="renovation" class="sr-only" onchange="calculateQuote()">
+                            <i class="fa-solid fa-paint-roller text-btp-blue mr-3 text-lg"></i>
+                            <div>
+                                <div class="font-bold">Rénovation Complète</div>
+                                <div class="text-[11px] text-slate-500" id="ratePreviewReno">110 000 FCFA/m²</div>
+                            </div>
+                        </label>
+                        <label class="relative flex items-center p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-btp-orange transition-all font-medium text-sm has-[:checked]:border-btp-orange has-[:checked]:bg-orange-50/50">
+                            <input type="radio" name="projectType" value="gros-oeuvre" class="sr-only" onchange="calculateQuote()">
+                            <i class="fa-solid fa-trowel-bricks text-btp-blue mr-3 text-lg"></i>
+                            <div>
+                                <div class="font-bold">Gros Œuvre Seul</div>
+                                <div class="text-[11px] text-slate-500" id="ratePreviewGrosOeuvre">130 000 FCFA/m²</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Surface au Sol & Curseur (Correction Bug Harmonisation 20-2000m²) -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <label for="surfaceInput" class="block text-sm font-semibold text-slate-700">
+                            Surface Totale Construite (m²)
+                        </label>
+                        <div class="flex items-center space-x-1">
+                            <input type="number" id="surfaceInput" value="150" min="20" max="2000" class="w-24 px-3 py-1.5 border-2 border-btp-blue rounded-lg font-bold text-right text-btp-blue focus:outline-none focus:border-btp-orange" oninput="syncSurfaceSlider(this.value); calculateQuote();">
+                            <span class="font-bold text-slate-600">m²</span>
+                        </div>
+                    </div>
+                    <input type="range" id="surfaceSlider" min="20" max="2000" step="10" value="150" class="w-full accent-btp-orange h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" oninput="syncSurfaceInput(this.value); calculateQuote();">
+                    <div class="flex justify-between text-xs text-slate-400 font-medium">
+                        <span>20 m²</span>
+                        <span>1 000 m²</span>
+                        <span>2 000 m²</span>
+                    </div>
+                </div>
+
+                <!-- Nombre de Niveaux et Finition -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="levels" class="block text-sm font-semibold text-slate-700 mb-1">Nombre d'étages (Niveaux)</label>
+                        <select id="levels" class="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-btp-orange focus:outline-none bg-white font-medium text-sm" onchange="calculateQuote()">
+                            <option value="1">Rez-de-chaussée seul (RDC)</option>
+                            <option value="2">R+1 (1 Étage)</option>
+                            <option value="3">R+2 (2 Étages)</option>
+                            <option value="4">R+3 (3 Étages)</option>
+                            <option value="5">R+4 ou plus</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="finishing" class="block text-sm font-semibold text-slate-700 mb-1">Niveau de Finition</label>
+                        <select id="finishing" class="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-btp-orange focus:outline-none bg-white font-medium text-sm" onchange="calculateQuote()">
+                            <option value="eco">Économique / Standard</option>
+                            <option value="moyen" selected>Moyen / Gamme Supérieure (+35%)</option>
+                            <option value="luxe">Luxe / Haut de Gamme / VIP (+85%)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SECTION SPÉCIALE : CONCEPTION DE PLANS -->
+                <div class="border-2 border-btp-cyan/30 bg-cyan-50/30 rounded-2xl p-4 sm:p-5 space-y-3">
+                    <div class="flex items-center justify-between border-b border-cyan-100 pb-2">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-compass-drafting text-btp-cyan text-xl"></i>
+                            <h4 class="font-bold text-btp-blue text-base">Conception de Plans & Architecture</h4>
+                        </div>
+                        <span class="text-xs bg-btp-blue text-white px-2 py-0.5 rounded font-bold">Nouveau</span>
+                    </div>
+                    <p class="text-xs text-slate-600">Sélectionnez le niveau de prestation souhaité pour l'élaboration de vos plans d'exécution.</p>
+                    
+                    <div class="space-y-2">
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-btp-cyan cursor-pointer text-sm">
+                            <div class="flex items-center space-x-3">
+                                <input type="radio" name="planOption" value="none" class="text-btp-orange focus:ring-btp-orange" onchange="calculateQuote()">
+                                <div>
+                                    <div class="font-semibold text-slate-800">Aucun plan requis</div>
+                                    <div class="text-[11px] text-slate-500">Le client fournit déjà ses plans d'exécution validés</div>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-slate-500">0 FCFA</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-btp-cyan cursor-pointer text-sm">
+                            <div class="flex items-center space-x-3">
+                                <input type="radio" name="planOption" value="standard" checked class="text-btp-orange focus:ring-btp-orange" onchange="calculateQuote()">
+                                <div>
+                                    <div class="font-semibold text-slate-800">Plan Standard & Extrait de Plan</div>
+                                    <div class="text-[11px] text-slate-500">Plan 2D, Masse, Implantation & Croquis de distribution</div>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-btp-cyan" id="planStandardPriceLbl">350 000 FCFA</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-btp-cyan cursor-pointer text-sm">
+                            <div class="flex items-center space-x-3">
+                                <input type="radio" name="planOption" value="pro" class="text-btp-orange focus:ring-btp-orange" onchange="calculateQuote()">
+                                <div>
+                                    <div class="font-semibold text-slate-800">Plan Professionnel / Pro complet</div>
+                                    <div class="text-[11px] text-slate-500">Architecture 2D/3D, Permis de construire, Rendu HD & Métré complet</div>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-btp-orange" id="planProPriceLbl">1 200 000 FCFA</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Options Supplémentaires Personnalisables -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-semibold text-slate-700">Options & Aménagements Complémentaires</label>
+                        <span class="text-xs text-slate-400 italic">Prix modifiables dans les réglages</span>
+                    </div>
+                    <div class="space-y-2.5">
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-sm">
+                            <span class="flex items-center space-x-3">
+                                <input type="checkbox" id="optGeotech" class="w-4 h-4 text-btp-orange rounded focus:ring-btp-orange border-slate-300" onchange="calculateQuote()">
+                                <span class="font-medium text-slate-700" id="lbl_optGeotech">Études Géotechniques Sol & Fissures</span>
+                            </span>
+                            <span class="text-xs font-bold bg-slate-100 px-2.5 py-1 rounded-full text-btp-blue" id="val_optGeotech">1 200 000 FCFA</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-sm">
+                            <span class="flex items-center space-x-3">
+                                <input type="checkbox" id="optCloture" class="w-4 h-4 text-btp-orange rounded focus:ring-btp-orange border-slate-300" onchange="calculateQuote()">
+                                <span class="font-medium text-slate-700" id="lbl_optCloture">Clôture périphérique & Porton métallique</span>
+                            </span>
+                            <span class="text-xs font-bold bg-slate-100 px-2.5 py-1 rounded-full text-btp-blue" id="val_optCloture">2 500 000 FCFA</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-sm">
+                            <span class="flex items-center space-x-3">
+                                <input type="checkbox" id="optSecu" class="w-4 h-4 text-btp-orange rounded focus:ring-btp-orange border-slate-300" onchange="calculateQuote()">
+                                <span class="font-medium text-slate-700" id="lbl_optSecu">Sécurité & Vidéosurveillance IP</span>
+                            </span>
+                            <span class="text-xs font-bold bg-slate-100 px-2.5 py-1 rounded-full text-btp-blue" id="val_optSecu">850 000 FCFA</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-sm">
+                            <span class="flex items-center space-x-3">
+                                <input type="checkbox" id="optSolaire" class="w-4 h-4 text-btp-orange rounded focus:ring-btp-orange border-slate-300" onchange="calculateQuote()">
+                                <span class="font-medium text-slate-700" id="lbl_optSolaire">Installation Solaire / Hybride Photovoltaïque</span>
+                            </span>
+                            <span class="text-xs font-bold bg-slate-100 px-2.5 py-1 rounded-full text-btp-blue" id="val_optSolaire">3 500 000 FCFA</span>
+                        </label>
+
+                        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-sm">
+                            <span class="flex items-center space-x-3">
+                                <input type="checkbox" id="optJardin" class="w-4 h-4 text-btp-orange rounded focus:ring-btp-orange border-slate-300" onchange="calculateQuote()">
+                                <span class="font-medium text-slate-700" id="lbl_optJardin">Aménagement Paysager, Pavage & Espaces Verts</span>
+                            </span>
+                            <span class="text-xs font-bold bg-slate-100 px-2.5 py-1 rounded-full text-btp-blue" id="val_optJardin">1 800 000 FCFA</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Formulaire Informations Client -->
+                <div class="border-t border-slate-200 pt-5 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="bg-amber-100 text-btp-orange p-2 rounded-lg font-bold text-lg"><i class="fa-solid fa-user text-base"></i></span>
+                        <h3 class="text-lg font-bold text-btp-blue">2. Coordonnées pour le Devis</h3>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nom complet du client</label>
+                            <input type="text" id="clientName" placeholder="Ex: M. Ousmane Ndiaye" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-btp-orange focus:outline-none" oninput="calculateQuote()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Téléphone</label>
+                            <input type="tel" id="clientPhone" placeholder="Ex: +221 77 000 00 00" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-btp-orange focus:outline-none" oninput="calculateQuote()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Adresse Email</label>
+                            <input type="email" id="clientEmail" placeholder="client@exemple.sn" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-btp-orange focus:outline-none" oninput="calculateQuote()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Localisation du projet</label>
+                            <input type="text" id="clientLoc" placeholder="Ex: Diamniadio, Saly, Almadies..." class="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-btp-orange focus:outline-none" oninput="calculateQuote()">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Résultat et Graphique (Col 5) -->
+            <div class="lg:col-span-5 space-y-6">
+
+                <!-- Carte Résultat Principal -->
+                <div class="bg-btp-blue text-white rounded-2xl p-6 sm:p-8 shadow-xl relative overflow-hidden border-b-8 border-btp-orange">
+                    <div class="absolute -right-10 -bottom-10 opacity-10 text-white text-9xl">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    
+                    <span class="inline-block bg-white/10 text-amber-300 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider mb-3">
+                        Estimation Globale TTC
+                    </span>
+                    
+                    <div class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2" id="totalPriceDisplay">
+                        0 FCFA
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 text-slate-300 text-xs sm:text-sm mb-6 border-b border-white/10 pb-4">
+                        <i class="fa-solid fa-clock text-btp-orange"></i>
+                        <span>Durée estimée des travaux : <strong id="durationDisplay" class="text-white">0 Mois</strong></span>
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-300">Prix Moyen au m² :</span>
+                            <span class="font-bold text-amber-400" id="pricePerM2Display">0 FCFA / m²</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-300">Part Plans & Architecture :</span>
+                            <span class="font-semibold text-cyan-300" id="planDisplayCost">0 FCFA</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-300">Imprévus & Marge (<span id="contingencyPercentDisplay">5%</span>) :</span>
+                            <span class="font-semibold text-slate-200" id="contingencyDisplay">0 FCFA</span>
+                        </div>
+                    </div>
+
+                    <button onclick="window.print()" class="no-print mt-6 w-full py-3.5 px-6 bg-btp-orange hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-3 text-base">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Imprimer / Télécharger le Devis PDF</span>
+                    </button>
+                </div>
+
+                <!-- Répartition des Coûts & Graphique -->
+                <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-200 space-y-4 no-print">
+                    <h3 class="font-bold text-btp-blue text-lg flex items-center justify-between">
+                        <span><i class="fa-solid fa-chart-pie text-btp-orange mr-2"></i>Répartition des Postes</span>
+                    </h3>
+
+                    <!-- Graphique Chart.js -->
+                    <div class="relative h-48 w-full">
+                        <canvas id="costChart"></canvas>
+                    </div>
+
+                    <!-- Détails Chiffrés -->
+                    <div class="space-y-2 pt-3 border-t border-slate-100 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-600 inline-block mr-2"></span>Gros Œuvre & Structure :</span>
+                            <span class="font-bold" id="grosOeuvreDisplay">0 FCFA</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block mr-2"></span>Second Œuvre & Finitions :</span>
+                            <span class="font-bold" id="secondOeuvreDisplay">0 FCFA</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block mr-2"></span>Main d'Œuvre & Maîtrise :</span>
+                            <span class="font-bold" id="mainOeuvreDisplay">0 FCFA</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-cyan-500 inline-block mr-2"></span>Plans & Architecture :</span>
+                            <span class="font-bold" id="plansBreakdownDisplay">0 FCFA</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-purple-500 inline-block mr-2"></span>Options Aménagements :</span>
+                            <span class="font-bold" id="optionsDisplay">0 FCFA</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ZONE D'IMPRESSION (Visible uniquement à l'impression / Génération Devis PDF) -->
+        <div id="printArea" class="hidden print-only p-8 bg-white border-print max-w-4xl mx-auto">
+            <!-- En-tête Devis avec Logo Officiel -->
+            <div class="flex justify-between items-start border-b-2 border-slate-800 pb-6 mb-6">
+                <div class="flex items-center space-x-4">
+                    <div class="w-20 h-20 bg-white border border-slate-300 p-1 rounded-lg">
+                        <svg viewBox="0 0 300 200" class="w-full h-full">
+                            <path d="M 30,120 A 120,120 0 0,1 270,120" fill="none" stroke="#0B2545" stroke-width="14" stroke-linecap="round"/>
+                            <path d="M 45,120 A 105,105 0 0,1 255,120" fill="none" stroke="#00A8E8" stroke-width="4" stroke-dasharray="8,4"/>
+                            <path d="M 20,135 L 280,135" stroke="#0B2545" stroke-width="12" stroke-linecap="round"/>
+                            <polygon points="150,40 70,105 230,105" fill="none" stroke="#0B2545" stroke-width="12" stroke-linejoin="round"/>
+                            <rect x="135" y="75" width="30" height="30" fill="none" stroke="#0B2545" stroke-width="5"/>
+                            <path d="M 80,120 L 130,85 L 160,100 L 225,45" fill="none" stroke="#0B2545" stroke-width="10" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-slate-900 leading-tight">BCTES / SIDIBE <span class="text-blue-600">BCTES / IMMO</span></h1>
+                        <p class="text-xs text-slate-700 font-bold uppercase tracking-wide">Bureau d'Études • Maçonnerie • Rénovation • Immobilier • TP</p>
+                        <p class="text-xs text-slate-500 mt-1">Siège social : Dakar, Sénégal | Tél: +221 33 800 00 00 | Email: contact@bctes-sidibe.sn</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="inline-block bg-slate-900 text-white font-bold text-xs uppercase px-3 py-1 rounded mb-2">Devis Estimatif</span>
+                    <p class="text-xs text-slate-500">Date: <span id="printDate"></span></p>
+                    <p class="text-xs text-slate-500">Réf: #DEV-<span id="printRef"></span></p>
                 </div>
             </div>
 
-            <!-- Résultats du calcul -->
-            <div class="mt-6 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                <h3 class="font-bold text-slate-700">Estimation Financière</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-                    <div class="bg-white p-3 rounded-lg shadow-xs border">
-                        <span class="text-xs text-slate-500 block">Gros Œuvre</span>
-                        <span id="grosOeuvreCost" class="font-bold text-emerald-600 text-sm">0 FCFA</span>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg shadow-xs border">
-                        <span class="text-xs text-slate-500 block">Second Œuvre</span>
-                        <span id="secondOeuvreCost" class="font-bold text-emerald-600 text-sm">0 FCFA</span>
-                    </div>
-                    <div class="bg-white p-3 rounded-lg shadow-xs border">
-                        <span class="text-xs text-slate-500 block">Options / Finitions</span>
-                        <span id="optionsCost" class="font-bold text-emerald-600 text-sm">0 FCFA</span>
-                    </div>
-                    <div class="bg-emerald-700 text-white p-3 rounded-lg shadow-xs">
-                        <span class="text-xs text-emerald-100 block">Coût Total Estimé</span>
-                        <span id="totalCost" class="font-bold text-base">0 FCFA</span>
-                    </div>
+            <!-- Informations Client & Ouvrage -->
+            <div class="grid grid-cols-2 gap-6 mb-6 p-4 bg-slate-50 rounded-lg text-sm border border-slate-200">
+                <div>
+                    <h4 class="font-bold text-slate-800 uppercase text-xs mb-2 border-b border-slate-300 pb-1">Client :</h4>
+                    <p class="text-slate-700"><strong>Nom :</strong> <span id="pClientName">Non spécifié</span></p>
+                    <p class="text-slate-700"><strong>Téléphone :</strong> <span id="pClientPhone">-</span></p>
+                    <p class="text-slate-700"><strong>Email :</strong> <span id="pClientEmail">-</span></p>
+                    <p class="text-slate-700"><strong>Localisation du projet :</strong> <span id="pClientLoc">-</span></p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 uppercase text-xs mb-2 border-b border-slate-300 pb-1">Spécifications Projet :</h4>
+                    <p class="text-slate-700"><strong>Type d'ouvrage :</strong> <span id="pProjectType">-</span></p>
+                    <p class="text-slate-700"><strong>Surface totale :</strong> <span id="pSurface">-</span> m²</p>
+                    <p class="text-slate-700"><strong>Niveaux :</strong> <span id="pLevels">-</span></p>
+                    <p class="text-slate-700"><strong>Finition :</strong> <span id="pFinishing">-</span></p>
+                    <p class="text-slate-700"><strong>Niveau de Plan :</strong> <span id="pPlanOption">-</span></p>
                 </div>
             </div>
 
-            <!-- Graphique -->
-            <div class="mt-4 pt-4 border-t">
-                <canvas id="costChart" class="max-h-50"></canvas>
+            <!-- Tableau Récapitulatif Détaillé -->
+            <table class="w-full text-left text-sm border-collapse mb-6">
+                <thead>
+                    <tr class="bg-slate-900 text-white">
+                        <th class="p-3">Désignation du Poste</th>
+                        <th class="p-3 text-right">Montant Estimé (FCFA)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 border-b border-slate-200">
+                    <tr>
+                        <td class="p-3">
+                            <strong class="text-slate-800">Conception & Élaboration des Plans d'Architecture</strong>
+                            <div class="text-xs text-slate-500" id="pPlanDetails">Extrait de plan / Dessin technique</div>
+                        </td>
+                        <td class="p-3 text-right font-semibold" id="pPlanCost">0 FCFA</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3">
+                            <strong class="text-slate-800">Gros Œuvre, Fondations & Structure Béton Armé</strong>
+                        </td>
+                        <td class="p-3 text-right font-semibold" id="pGrosOeuvre">0 FCFA</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3">
+                            <strong class="text-slate-800">Second Œuvre, Carrelage, Peinture & Finitions</strong>
+                        </td>
+                        <td class="p-3 text-right font-semibold" id="pSecondOeuvre">0 FCFA</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3">
+                            <strong class="text-slate-800">Main d'Œuvre Qualifiée & Encadrement Technique</strong>
+                        </td>
+                        <td class="p-3 text-right font-semibold" id="pMainOeuvre">0 FCFA</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3">
+                            <strong class="text-slate-800">Options & Aménagements Complémentaires</strong>
+                        </td>
+                        <td class="p-3 text-right font-semibold" id="pOptions">0 FCFA</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 text-slate-600 italic">Marge de Sécurité / Imprévus de Chantier (<span id="pContingencyPct">5%</span>)</td>
+                        <td class="p-3 text-right font-semibold text-slate-600" id="pContingency">0 FCFA</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Total Final -->
+            <div class="flex justify-between items-center p-4 bg-slate-900 text-white rounded-lg mb-8">
+                <div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-amber-400">Montant Total Estimé (TTC)</span>
+                    <p class="text-xs text-slate-300">Durée estimative de réalisation : <span id="pDuration" class="font-bold text-white">0 Mois</span></p>
+                </div>
+                <div class="text-2xl font-extrabold text-amber-400" id="pTotal">0 FCFA</div>
             </div>
-        </section>
+
+            <!-- Conditions & Signatures -->
+            <div class="mt-8 pt-4 border-t border-slate-300 text-xs text-slate-500 flex justify-between items-end">
+                <div class="max-w-md space-y-1">
+                    <p class="font-bold text-slate-700">Conditions d'engagement :</p>
+                    <p>Ce devis est une estimation basée sur les barèmes actuels du BTP au Sénégal. Une visite de site et un métré contradictoire valideront l'offre définitive.</p>
+                </div>
+                <div class="text-center min-w-[200px]">
+                    <p class="font-bold text-slate-800 mb-8">La Direction BCTES SIDIBE</p>
+                    <p class="text-slate-400">________________________</p>
+                </div>
+            </div>
+        </div>
 
     </main>
 
-    <!-- Script de calcul et de gestion de l'interface -->
+    <!-- MODAL DE RÉGLAGES ET CONFIGURATION DES PRIX -->
+    <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden no-print">
+        <div class="bg-white w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col m-4 border border-slate-200">
+            
+            <!-- Modal Header -->
+            <div class="bg-btp-blue text-white p-5 flex justify-between items-center border-b-4 border-btp-orange">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-sliders text-amber-400 text-xl"></i>
+                    <div>
+                        <h3 class="font-bold text-lg leading-tight">Configuration des Barèmes & Tarifs BTP</h3>
+                        <p class="text-xs text-slate-300">Ajustez les prix unitaires et les ratios appliqués au calculateur</p>
+                    </div>
+                </div>
+                <button onclick="closeSettingsModal()" class="text-slate-300 hover:text-white text-2xl font-bold transition">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="p-6 space-y-6 overflow-y-auto flex-grow text-sm">
+                
+                <!-- 1. Tarifs au m² par Type de Projet -->
+                <div class="space-y-3">
+                    <h4 class="font-bold text-btp-blue border-b border-slate-200 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-btp-orange"></i> 1. Tarifs de Base au m² (en FCFA)
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Villa / Maison (FCFA / m²)</label>
+                            <input type="number" id="cfg_rate_maison" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Immeuble R+ / Commercial (FCFA / m²)</label>
+                            <input type="number" id="cfg_rate_immeuble" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Rénovation Complète (FCFA / m²)</label>
+                            <input type="number" id="cfg_rate_renovation" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Gros Œuvre Seul (FCFA / m²)</label>
+                            <input type="number" id="cfg_rate_gros_oeuvre" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Tarifs Forfaitaires des Plans d'Architecture -->
+                <div class="space-y-3">
+                    <h4 class="font-bold text-btp-blue border-b border-slate-200 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-ruler text-btp-cyan"></i> 2. Tarifs des Prestations de Plans
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Plan Standard & Extrait de Plan (Forfait FCFA)</label>
+                            <input type="number" id="cfg_plan_standard" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Plan Professionnel Pro 2D/3D (Forfait FCFA)</label>
+                            <input type="number" id="cfg_plan_pro" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Tarifs des Options & Aménagements -->
+                <div class="space-y-3">
+                    <h4 class="font-bold text-btp-blue border-b border-slate-200 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-square-plus text-emerald-500"></i> 3. Tarifs des Options Complémentaires
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Études Géotechniques Sol</label>
+                            <input type="number" id="cfg_opt_geotech" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Clôture & Porton Métallique</label>
+                            <input type="number" id="cfg_opt_cloture" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Vidéosurveillance & Sécurité</label>
+                            <input type="number" id="cfg_opt_secu" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Installation Solaire Photovoltaïque</label>
+                            <input type="number" id="cfg_opt_solaire" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Aménagement Paysager & Pavage</label>
+                            <input type="number" id="cfg_opt_jardin" class="w-full p-2.5 border rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-btp-orange">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Ratios & Ventilation (%) -->
+                <div class="space-y-3">
+                    <h4 class="font-bold text-btp-blue border-b border-slate-200 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-percent text-purple-500"></i> 4. Pourcentages de Ventilation du Gros Œuvre
+                    </h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Gros Œuvre (%)</label>
+                            <input type="number" id="cfg_pct_gros" value="45" min="10" max="80" class="w-full p-2 border rounded font-bold text-center">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Second Œuvre (%)</label>
+                            <input type="number" id="cfg_pct_second" value="35" min="10" max="80" class="w-full p-2 border rounded font-bold text-center">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Main d'Œuvre (%)</label>
+                            <input type="number" id="cfg_pct_main" value="20" min="5" max="50" class="w-full p-2 border rounded font-bold text-center">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Imprévus (%)</label>
+                            <input type="number" id="cfg_pct_contingency" value="5" min="0" max="20" class="w-full p-2 border rounded font-bold text-center">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-between items-center">
+                <button onclick="resetDefaultConfig()" class="text-xs text-red-600 hover:underline font-bold">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Réinitialiser par défaut
+                </button>
+                <div class="flex space-x-3">
+                    <button onclick="closeSettingsModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold transition">
+                        Annuler
+                    </button>
+                    <button onclick="saveConfigAndRecalculate()" class="px-5 py-2 bg-btp-orange hover:bg-orange-600 text-white rounded-lg text-xs font-bold transition shadow-md">
+                        Enregistrer les Modifs
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Pied de page / Footer -->
+    <footer class="bg-btp-blue text-slate-400 text-xs py-6 border-t border-slate-800 no-print mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="text-white font-semibold">BCTES SIDIBE BCTES / IMMO - Tous droits réservés © <span id="year"></span></p>
+            <p>Bâtiment • Construction • Expertise & Immobilier au Sénégal</p>
+        </div>
+    </footer>
+
+    <!-- Logic JavaScript & Dynamic Engine -->
     <script>
-        let costChart = null;
-
-        function formatFCFA(amount) {
-            return new Intl.NumberFormat('fr-FR').format(Math.round(amount)) + " FCFA";
-        }
-
-        function toggleEditor() {
-            const paramsSection = document.getElementById('parametersSection');
-            // Bascule l'affichage des paramètres si l'utilisateur clique sur l'éditeur
-            if (paramsSection.style.display === 'none') {
-                paramsSection.style.display = 'block';
-            } else {
-                paramsSection.style.display = 'none';
+        // CONFIGURATION PAR DÉFAUT DU BARÈME BTP
+        let config = {
+            rates: {
+                maison: 220000,
+                immeuble: 260000,
+                renovation: 110000,
+                'gros-oeuvre': 130000
+            },
+            plans: {
+                standard: 350000,
+                pro: 1200000
+            },
+            options: {
+                optGeotech: 1200000,
+                optCloture: 2500000,
+                optSecu: 850000,
+                optSolaire: 3500000,
+                optJardin: 1800000
+            },
+            ratios: {
+                gros: 0.45,
+                second: 0.35,
+                main: 0.20,
+                contingency: 0.05
             }
+        };
+
+        let costChart;
+
+        // Synchronisation Slider / Input avec plage harmonisée (20 - 2000 m²)
+        function syncSurfaceSlider(val) {
+            let clamped = Math.min(Math.max(val, 20), 2000);
+            document.getElementById('surfaceSlider').value = clamped;
         }
 
+        function syncSurfaceInput(val) {
+            document.getElementById('surfaceInput').value = val;
+        }
+
+        // Formateur Monétaire FCFA
+        function formatFCFA(amount) {
+            return new Intl.NumberFormat('fr-FR').format(Math.round(amount)) + ' FCFA';
+        }
+
+        // Gestion du Modal de Configuration
+        function openSettingsModal() {
+            // Charger les valeurs actuelles dans le formulaire
+            document.getElementById('cfg_rate_maison').value = config.rates.maison;
+            document.getElementById('cfg_rate_immeuble').value = config.rates.immeuble;
+            document.getElementById('cfg_rate_renovation').value = config.rates.renovation;
+            document.getElementById('cfg_rate_gros_oeuvre').value = config.rates['gros-oeuvre'];
+
+            document.getElementById('cfg_plan_standard').value = config.plans.standard;
+            document.getElementById('cfg_plan_pro').value = config.plans.pro;
+
+            document.getElementById('cfg_opt_geotech').value = config.options.optGeotech;
+            document.getElementById('cfg_opt_cloture').value = config.options.optCloture;
+            document.getElementById('cfg_opt_secu').value = config.options.optSecu;
+            document.getElementById('cfg_opt_solaire').value = config.options.optSolaire;
+            document.getElementById('cfg_opt_jardin').value = config.options.optJardin;
+
+            document.getElementById('cfg_pct_gros').value = Math.round(config.ratios.gros * 100);
+            document.getElementById('cfg_pct_second').value = Math.round(config.ratios.second * 100);
+            document.getElementById('cfg_pct_main').value = Math.round(config.ratios.main * 100);
+            document.getElementById('cfg_pct_contingency').value = Math.round(config.ratios.contingency * 100);
+
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function saveConfigAndRecalculate() {
+            // Récupération des données du formulaire modal
+            config.rates.maison = parseFloat(document.getElementById('cfg_rate_maison').value) || 220000;
+            config.rates.immeuble = parseFloat(document.getElementById('cfg_rate_immeuble').value) || 260000;
+            config.rates.renovation = parseFloat(document.getElementById('cfg_rate_renovation').value) || 110000;
+            config.rates['gros-oeuvre'] = parseFloat(document.getElementById('cfg_rate_gros_oeuvre').value) || 130000;
+
+            config.plans.standard = parseFloat(document.getElementById('cfg_plan_standard').value) || 350000;
+            config.plans.pro = parseFloat(document.getElementById('cfg_plan_pro').value) || 1200000;
+
+            config.options.optGeotech = parseFloat(document.getElementById('cfg_opt_geotech').value) || 1200000;
+            config.options.optCloture = parseFloat(document.getElementById('cfg_opt_cloture').value) || 2500000;
+            config.options.optSecu = parseFloat(document.getElementById('cfg_opt_secu').value) || 850000;
+            config.options.optSolaire = parseFloat(document.getElementById('cfg_opt_solaire').value) || 3500000;
+            config.options.optJardin = parseFloat(document.getElementById('cfg_opt_jardin').value) || 1800000;
+
+            config.ratios.gros = (parseFloat(document.getElementById('cfg_pct_gros').value) || 45) / 100;
+            config.ratios.second = (parseFloat(document.getElementById('cfg_pct_second').value) || 35) / 100;
+            config.ratios.main = (parseFloat(document.getElementById('cfg_pct_main').value) || 20) / 100;
+            config.ratios.contingency = (parseFloat(document.getElementById('cfg_pct_contingency').value) || 5) / 100;
+
+            updateUIWithConfig();
+            calculateQuote();
+            closeSettingsModal();
+        }
+
+        function resetDefaultConfig() {
+            config = {
+                rates: { maison: 220000, immeuble: 260000, renovation: 110000, 'gros-oeuvre': 130000 },
+                plans: { standard: 350000, pro: 1200000 },
+                options: { optGeotech: 1200000, optCloture: 2500000, optSecu: 850000, optSolaire: 3500000, optJardin: 1800000 },
+                ratios: { gros: 0.45, second: 0.35, main: 0.20, contingency: 0.05 }
+            };
+            openSettingsModal();
+        }
+
+        function updateUIWithConfig() {
+            // Mettre à jour les textes d'aperçu des prix
+            document.getElementById('ratePreviewMaison').innerText = formatFCFA(config.rates.maison) + '/m²';
+            document.getElementById('ratePreviewImmeuble').innerText = formatFCFA(config.rates.immeuble) + '/m²';
+            document.getElementById('ratePreviewReno').innerText = formatFCFA(config.rates.renovation) + '/m²';
+            document.getElementById('ratePreviewGrosOeuvre').innerText = formatFCFA(config.rates['gros-oeuvre']) + '/m²';
+
+            document.getElementById('planStandardPriceLbl').innerText = formatFCFA(config.plans.standard);
+            document.getElementById('planProPriceLbl').innerText = formatFCFA(config.plans.pro);
+
+            document.getElementById('val_optGeotech').innerText = formatFCFA(config.options.optGeotech);
+            document.getElementById('val_optCloture').innerText = formatFCFA(config.options.optCloture);
+            document.getElementById('val_optSecu').innerText = formatFCFA(config.options.optSecu);
+            document.getElementById('val_optSolaire').innerText = formatFCFA(config.options.optSolaire);
+            document.getElementById('val_optJardin').innerText = formatFCFA(config.options.optJardin);
+
+            document.getElementById('contingencyPercentDisplay').innerText = Math.round(config.ratios.contingency * 100) + '%';
+        }
+
+        // CALCUL PRINCIPAL DU DEVIS
         function calculateQuote() {
-            // Récupération des valeurs de surface et de standing
             const surface = parseFloat(document.getElementById('surfaceInput').value) || 0;
-            const standingMultiplier = parseFloat(document.getElementById('standingSelect').value) || 1;
+            const projectType = document.querySelector('input[name="projectType"]:checked').value;
+            const levels = parseInt(document.getElementById('levels').value) || 1;
+            const finishing = document.getElementById('finishing').value;
+            const planOption = document.querySelector('input[name="planOption"]:checked').value;
 
-            // Récupération des barèmes personnalisables
-            const baseGros = parseFloat(document.getElementById('paramGrosOeuvre').value) || 0;
-            const baseSecond = parseFloat(document.getElementById('paramSecondOeuvre').value) || 0;
-            const baseOptions = parseFloat(document.getElementById('paramOptions').value) || 0;
+            // 1. Calcul Prix de Base Construction
+            let baseRatePerM2 = config.rates[projectType] || 220000;
 
-            // Calculs par poste avec application du coefficient de standing
-            const grosOeuvre = surface * baseGros * standingMultiplier;
-            const secondOeuvre = surface * baseSecond * standingMultiplier;
-            const options = surface * baseOptions * standingMultiplier;
-            const total = grosOeuvre + secondOeuvre + options;
+            let finishingCoeff = 1.0;
+            if (finishing === 'moyen') finishingCoeff = 1.35;
+            if (finishing === 'luxe') finishingCoeff = 1.85;
 
-            // Mise à jour de l'affichage textuel
-            document.getElementById('grosOeuvreCost').innerText = formatFCFA(grosOeuvre);
-            document.getElementById('secondOeuvreCost').innerText = formatFCFA(secondOeuvre);
-            document.getElementById('optionsCost').innerText = formatFCFA(options);
-            document.getElementById('totalCost').innerText = formatFCFA(total);
+            const levelCoeff = 1 + ((levels - 1) * 0.12);
+            const adjustedRatePerM2 = baseRatePerM2 * finishingCoeff * levelCoeff;
+            const baseConstructionCost = surface * adjustedRatePerM2;
 
-            // Mise à jour du graphique
-            updateChart(grosOeuvre, secondOeuvre, options);
+            // 2. Calcul du poste Plans d'Architecture
+            let planCost = 0;
+            let planLabelPrint = "Aucun plan (fourni par le client)";
+            if (planOption === 'standard') {
+                planCost = config.plans.standard;
+                planLabelPrint = "Plan Standard & Extrait de Plan";
+            } else if (planOption === 'pro') {
+                planCost = config.plans.pro;
+                planLabelPrint = "Plan Professionnel / Architecture Pro (2D/3D)";
+            }
+
+            // 3. Ventilation Gros/Second/Main d'oeuvre
+            const grosOeuvre = baseConstructionCost * config.ratios.gros;
+            const secondOeuvre = baseConstructionCost * config.ratios.second;
+            const mainOeuvre = baseConstructionCost * config.ratios.main;
+
+            // 4. Options sélectionnées
+            let optionsCost = 0;
+            if (document.getElementById('optGeotech').checked) optionsCost += config.options.optGeotech;
+            if (document.getElementById('optCloture').checked) optionsCost += config.options.optCloture;
+            if (document.getElementById('optSecu').checked) optionsCost += config.options.optSecu;
+            if (document.getElementById('optSolaire').checked) optionsCost += config.options.optSolaire;
+            if (document.getElementById('optJardin').checked) optionsCost += config.options.optJardin;
+
+            // 5. Sous-Total & Imprévus
+            const subTotal = baseConstructionCost + planCost + optionsCost;
+            const contingency = subTotal * config.ratios.contingency;
+            const totalCost = subTotal + contingency;
+
+            // Durée estimée
+            let durationMonths = Math.ceil((surface / 30) + (levels * 1.5));
+            if (projectType === 'renovation') durationMonths = Math.ceil(durationMonths * 0.6);
+
+            // MISE À JOUR DE L'IHM
+            document.getElementById('totalPriceDisplay').innerText = formatFCFA(totalCost);
+            document.getElementById('pricePerM2Display').innerText = formatFCFA(totalCost / (surface || 1)) + ' / m²';
+            document.getElementById('durationDisplay').innerText = durationMonths + ' Mois';
+            document.getElementById('contingencyDisplay').innerText = formatFCFA(contingency);
+            document.getElementById('planDisplayCost').innerText = formatFCFA(planCost);
+
+            document.getElementById('grosOeuvreDisplay').innerText = formatFCFA(grosOeuvre);
+            document.getElementById('secondOeuvreDisplay').innerText = formatFCFA(secondOeuvre);
+            document.getElementById('mainOeuvreDisplay').innerText = formatFCFA(mainOeuvre);
+            document.getElementById('plansBreakdownDisplay').innerText = formatFCFA(planCost);
+            document.getElementById('optionsDisplay').innerText = formatFCFA(optionsCost);
+
+            // Mise à jour du Graphique
+            updateChart(grosOeuvre, secondOeuvre, mainOeuvre, planCost, optionsCost);
+
+            // Préparation de la vue d'impression PDF
+            updatePrintView(grosOeuvre, secondOeuvre, mainOeuvre, planCost, planLabelPrint, optionsCost, contingency, totalCost, durationMonths);
         }
 
-        function updateChart(gros, second, options) {
+        // Graphique Camembert Chart.js
+        function updateChart(gros, second, main, plan, options) {
             const ctx = document.getElementById('costChart').getContext('2d');
             
             if (costChart) {
-                costChart.data.datasets[0].data = [gros, second, options];
-                costChart.update();
-            } else {
-                costChart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Gros Œuvre', 'Second Œuvre', 'Options & Finitions'],
-                        datasets: [{
-                            data: [gros, second, options],
-                            backgroundColor: ['#059669', '#10b981', '#34d399'],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: { font: { size: 11 } }
-                            }
-                        }
-                    }
-                });
+                costChart.destroy();
             }
+
+            costChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Gros Œuvre', 'Finitions', 'Main d\'Œuvre', 'Plans', 'Options'],
+                    datasets: [{
+                        data: [gros, second, main, plan, options],
+                        backgroundColor: ['#2563EB', '#F59E0B', '#10B981', '#00A8E8', '#A855F7'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '68%'
+                }
+            });
         }
 
-        // Lancer le calcul initial au chargement de la page
+        // Synchroniser le Devis Imprimable
+        function updatePrintView(gros, second, main, planCost, planLabel, options, contingency, total, duration) {
+            document.getElementById('pClientName').innerText = document.getElementById('clientName').value || 'Client Non spécifié';
+            document.getElementById('pClientPhone').innerText = document.getElementById('clientPhone').value || '-';
+            document.getElementById('pClientEmail').innerText = document.getElementById('clientEmail').value || '-';
+            document.getElementById('pClientLoc').innerText = document.getElementById('clientLoc').value || 'Sénégal';
+
+            const pType = document.querySelector('input[name="projectType"]:checked').parentElement.querySelector('.font-bold').innerText;
+            document.getElementById('pProjectType').innerText = pType;
+            document.getElementById('pSurface').innerText = document.getElementById('surfaceInput').value;
+            
+            const levelSelect = document.getElementById('levels');
+            document.getElementById('pLevels').innerText = levelSelect.options[levelSelect.selectedIndex].text;
+
+            const finishingSelect = document.getElementById('finishing');
+            document.getElementById('pFinishing').innerText = finishingSelect.options[finishingSelect.selectedIndex].text;
+
+            document.getElementById('pPlanOption').innerText = planLabel;
+            document.getElementById('pPlanDetails').innerText = planLabel;
+            document.getElementById('pPlanCost').innerText = formatFCFA(planCost);
+
+            document.getElementById('pGrosOeuvre').innerText = formatFCFA(gros);
+            document.getElementById('pSecondOeuvre').innerText = formatFCFA(second);
+            document.getElementById('pMainOeuvre').innerText = formatFCFA(main);
+            document.getElementById('pOptions').innerText = formatFCFA(options);
+            document.getElementById('pContingencyPct').innerText = Math.round(config.ratios.contingency * 100) + '%';
+            document.getElementById('pContingency').innerText = formatFCFA(contingency);
+            document.getElementById('pTotal').innerText = formatFCFA(total);
+            document.getElementById('pDuration').innerText = duration + ' Mois';
+        }
+
+        // Initialisation au chargement
         window.onload = function() {
+            document.getElementById('year').innerText = new Date().getFullYear();
+            document.getElementById('printDate').innerText = new Date().toLocaleDateString('fr-FR');
+            document.getElementById('printRef').innerText = Math.floor(100000 + Math.random() * 900000);
+
+            updateUIWithConfig();
             calculateQuote();
         };
     </script>
 </body>
 </html>
+```
